@@ -81,7 +81,10 @@ def sortUnknown(linesunknown):
 
 
 def parseRow(rida, songFirst):
-    kriips = rida.find("-")
+    if "-" in rida:
+        kriips = rida.find("-")
+    elif "–" in rida:
+        kriips = rida.find("–")
     #print(kriips)
     esipool = rida[0:kriips].strip()
     tagupool = rida[kriips + 1:len(rida)].strip()
