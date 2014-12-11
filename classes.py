@@ -1,7 +1,6 @@
 __author__ = 'Laur'
 import collections
 import sys
-import user
 import vlc
 from PyQt5 import QtGui, QtCore
 
@@ -155,10 +154,30 @@ class Song(object):
 
 
 
+#class Player(QtGui.QMainWindow):
+#    pass
+
+# def __init__(self, master=None):
+#     QtGui.QMainWindow.__init__(self, master)
+#     self.setWindowTitle("Media Player")
+#
+#     # creating a basic vlc instance
+#     self.instance = vlc.Instance()
+#     # creating an empty vlc media player
+#     self.mediaplayer = self.instance.media_player_new()
+#
+#     self.createUI()
+#     self.isPaused = False
 
 
 
 
+
+
+
+"""
+Here be lions.
+And some pretty creepy advanced stuff to be used as a reference.
 
 
 
@@ -187,8 +206,8 @@ class Song(object):
 
 
 class Player(QtGui.QMainWindow):
-    """A simple Media Player using VLC and Qt
-    """
+    ""A simple Media Player using VLC and Qt
+    ""
     def __init__(self, master=None):
         QtGui.QMainWindow.__init__(self, master)
         self.setWindowTitle("Media Player")
@@ -202,8 +221,8 @@ class Player(QtGui.QMainWindow):
         self.isPaused = False
 
     def createUI(self):
-        """Set up the user interface, signals & slots
-        """
+        ""Set up the user interface, signals & slots
+        ""
         self.widget = QtGui.QWidget(self)
         self.setCentralWidget(self.widget)
 
@@ -268,8 +287,8 @@ class Player(QtGui.QMainWindow):
                      self.updateUI)
 
     def PlayPause(self):
-        """Toggle play/pause status
-        """
+        ""Toggle play/pause status
+        ""
         if self.mediaplayer.is_playing():
             self.mediaplayer.pause()
             self.playbutton.setText("Play")
@@ -284,16 +303,16 @@ class Player(QtGui.QMainWindow):
             self.isPaused = False
 
     def Stop(self):
-        """Stop player
-        """
+        ""Stop player
+        ""
         self.mediaplayer.stop()
         self.playbutton.setText("Play")
 
     def OpenFile(self, filename=None):
-        """Open a media file in a MediaPlayer
-        """
+        ""Open a media file in a MediaPlayer
+        ""
         if filename is None:
-            filename = QtGui.QFileDialog.getOpenFileName(self, "Open File", user.home)
+            filename = QtGui.QFileDialog.getOpenFileName(self, "Open File")#, user.home)
         if not filename:
             return
 
@@ -321,13 +340,13 @@ class Player(QtGui.QMainWindow):
         self.PlayPause()
 
     def setVolume(self, Volume):
-        """Set the volume
-        """
+        ""Set the volume
+        ""
         self.mediaplayer.audio_set_volume(Volume)
 
     def setPosition(self, position):
-        """Set the position
-        """
+        ""Set the position
+        ""
         # setting the position to where the slider was dragged
         self.mediaplayer.set_position(position / 1000.0)
         # the vlc MediaPlayer needs a float value between 0 and 1, Qt
@@ -336,7 +355,7 @@ class Player(QtGui.QMainWindow):
         # (1000 should be enough)
 
     def updateUI(self):
-        """updates the user interface"""
+        ""updates the user interface""
         # setting the slider to the desired position
         self.positionslider.setValue(self.mediaplayer.get_position() * 1000)
 
@@ -370,7 +389,7 @@ if __name__ == "__main__":
 
 
 
-"""
+
 class OrderedSet(collections.MutableSet):
 #Ordered set class copied from http://code.activestate.com/recipes/576694/
 

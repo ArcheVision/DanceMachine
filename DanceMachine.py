@@ -2,7 +2,7 @@ __author__ = 'Laur'
 
 import importLists
 import os
-from classes import Song
+from classes import Song#, Player
 import vlc
 import pygame
 
@@ -96,7 +96,7 @@ def loadFiles(songs, artists, mediadir):
             if song.artist() == i:
                 reply = findsong(i, song.title(), foldersOK[i])
                 if reply != None:
-                    print(reply)
+                    #print(reply)
                     song.setPath(reply)
 
 
@@ -110,7 +110,7 @@ def findsong(artist, title, filePath):
                 return os.path.join(root,name)
 
 
-def qtPlayer(songs):
+def qtPlayer(songs, artists):
     playables = []
     for song in songs:
         if song.isPresent():
@@ -123,21 +123,52 @@ def qtPlayer(songs):
         player = vlc.MediaPlayer()
         while not end:
             n = 1
-            print("available songs:")
-            for i in playables:
-                print(n, "\t", i.artist(), "-", i.title(), ":", i.dances())
-                n += 1
-            inp = input("Choose a song to play: ")
-            if inp == "exit":
+            print("Available commands: Play \t Pause \t Stop \t Exit \t - type and press >>Enter<<")
+            ask = input("Command:  ")
+            if ask.lower() == "play":
+
+                ask2 = input("Choose filter: (All) \t By (Artist) \t By (Dance) ")
+                if ask2.lower() == "all" or ask2.lower() == "":
+                    for i in playables:
+                        print(n, "\t", i.artist(), "-", i.title(), ":", i.dances())
+                        n += 1
+                elif ask2.lower() == "artist":
+                    for e in sorted(artists):
+                        print(e)
+                    ask3 = input("Enter artist name: ")
+                    num = 1
+                    for e in playables:
+                        if e.artist() == ask3:
+                            print(num, "\t", e.artist(), "-", e.title(), ":", e.dances())
+                            num += 1
+                        else:
+                            num += 1
+
+                elif ask2.lower() == "dance":
+                    for e in sorted(playables) :
+                        print(str(e.dances()))
+                    ask3 = input("Which dance: ")
+                    num = 1
+                    for e in playables:
+                        if ask3 in e.dances():
+                            print(num, "\t", e.artist(), "-", e.title(), ":", e.dances())
+                            num += 1
+                        else:
+                            num += 1
+
+                inp = input("Choose a song to play: ")
+                if inp.isdigit():
+                    player = vlc.MediaPlayer(playables[int(inp) - 1].getPath())
+                    player.play()
+                else:
+                    pass
+            if ask.lower() == "conf":
                 break
-            elif inp == "pause":
+            elif inp.lower() == "pause":
                 player.pause()
-            elif inp == "stop":
+            elif inp.lower() == "stop":
                 player.stop()
             #elif isinstance(inp, int) and inp in range(len(playables)):
-            elif inp.isdigit():
-                player = vlc.MediaPlayer(playables[int(inp)-1].getPath())
-                player.play()
             else:
                 pass
 
@@ -159,7 +190,7 @@ def pygPlayer(songs):
                 print(n, "\t", i.artist(), "-", i.title(), ":", i.dances())
                 n += 1
             inp = input("Choose a song to play: ")
-            if inp == "exit":
+            if inp.lower() == "conf":
                 break
             elif isinstance(inp, int) and inp in range(len(playables)):
                 pygame.mixer.music.load(playables[inp].getPath())
@@ -173,6 +204,16 @@ masterlist, dances, songs = importLists.prepare()
 mediadir = setPath()
 artists = []
 getArtists(masterlist, artists)
+loadFiles(songs, artists, mediadir)
+qtPlayer(songs, artists)
+# if __name__ == "__main__":
+#     app = QtGui.QApplication(sys.argv)
+#     player = Player()
+#     player.show()
+#     player.resize(640, 480)
+#     if sys.argv[1:]:
+#         player.OpenFile(sys.argv[1])
+#     sys.exit(app.exec_())
 
 
 
@@ -199,7 +240,7 @@ while not end:
         print(Song.listDances())
     if comm == "LOADF":
         loadFiles(songs, artists, mediadir)
-    if comm == "QTPLAYER":
-        qtPlayer(songs)
+    if comm == "PLAYER":
+        qtPlayer(songs, artists)
     if comm == "PYGPLAYER":
         pygPlayer(songs)
