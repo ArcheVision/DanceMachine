@@ -2,8 +2,9 @@ __author__ = 'Laur'
 
 import sys
 import os
+from classes import Song
 
-def process(read, masterlist, tundmatud, dances):
+def process(read, songs, masterlist, dances):
     dance = ""
     songfirst = True
     songno = 0
@@ -34,10 +35,16 @@ def process(read, masterlist, tundmatud, dances):
             lugu = {"artist": artist, "song": song, "dances": {dance}}
             if artist == "?" or song == "?":
                 masterlist.append(lugu)
+                songs.append(Song(artist, song, dance))
             elif not any(d["artist"] == artist and d["song"] == song for d in masterlist):
+                songs.append(Song(artist,song,dance))
                 masterlist.append(lugu)
                 songno += 1
             else:
+                for e in songs:
+                    if e.title == song and e.artist == artist:
+                        e.addDance(dance)
+
                 num = -1
                 for i, j in enumerate(masterlist):
                     if j["artist"] == artist and j["song"] == song:
@@ -48,6 +55,7 @@ def process(read, masterlist, tundmatud, dances):
             if rida != "" and rida != "\n" and rida != " \n":
                 lugu = {"artist": "?", "song": rida.strip(), "dances": {dance}}
                 masterlist.append(lugu)
+                songs.append(Song("?", rida.strip(), dance))
         #print("Korras!")
     #print(dance, "tantsust töödeldud", songno, "erinevat lugu")
 
@@ -78,16 +86,17 @@ def prepare(loc = "."):
             txtfiles.append(e)
     #print(txtfiles)
     masterlist = []
+    songs = []
     tundmatud = []
     dances = set()
 
     for e in txtfiles:
         #total_songs_by_dance[e] = 0
         with open(e, encoding="UTF-8") as f:
-            read = f.readlines()
+            lines = f.readlines()
         #print(e)
-        process(read, masterlist, tundmatud, dances)# töötle sisseloetud andmemaht läbi.
-    return masterlist, dances
+        process(lines, songs, masterlist, dances)# töötle sisseloetud andmemaht läbi.
+    return masterlist, dances, songs
 
 
 

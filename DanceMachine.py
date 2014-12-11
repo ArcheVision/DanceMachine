@@ -2,35 +2,46 @@ __author__ = 'Laur'
 
 import importLists
 import os
+from classes import Song
+import vlc
+import pygame
 
 
-def setPath(mediadir = "d:/meedia/muusika/"):
-    vastus = "0"
-    while True:
-        print("1. d:/meedia/muusika/")
-        print("2. z:/avalik/muusika/")
-        vastus = input("vali otsitee")
-        if vastus == "1":
-            mediadir = "d:/meedia/muusika/"
-            break
-        elif vastus == "2":
-            mediadir = "z:/avalik/muusika/"
-            break
-    return mediadir
+def setPath():
+    try:
+        with open("folders.path", encoding = "UTF-8") as f:
+            lines = f.readlines()
+    except:
+        return []
+    num = 1
+    path = []
+    #print("Currently available media folders:")
+    for l in lines:
+        #print(num, "\t", l.strip(), ("OK" if os.path.exists(l.strip()) else "Inaccessible" )  )
+        if os.path.exists(l.strip()):
+            path.append(l.strip())
+        num += 1
+    return path
 
 
 def detectFolders(artists,mediadir):
     num = 1
-    for e in os.listdir("d:/meedia/muusika/"):
-        if e in artists:
-            print(num, "Artisti kaust", e, "on olemas")
-            num += 1
+    avail = {}
+    artistsFound = []
+    for folder in mediadir:
+        for e in os.listdir(folder):
+            if e in artists and e not in artistsFound:
+                #print(num, "\tArtisti", e, "kaust on olemas: ", folder + e + "/")
+                avail[e] = folder + e + "/"
+                artistsFound.append(e)
+                num += 1
+    return avail
 
 
 def getArtists(masterlist, artists):
     for i in masterlist:
         if i["artist"] not in artists:
-            artists.append(i)
+            artists.append(i["artist"])
 
 def printSongs(masterlist):
     rows = []
@@ -61,6 +72,7 @@ def find(masterlist, dances):
         print(i)
 
 def countArtists(masterlist):
+    inp = input("Enter minimum song count threshold for artist to be displayed: ")
     count = {}
 
     for i in masterlist:
@@ -70,23 +82,104 @@ def countArtists(masterlist):
             count[i["artist"]] = 1
     print(count)
     for keys in count:
-        if count[keys] > 4:
+        if count[keys] >= inp:
             print(keys, "\t",count[keys])
 
+def numSongs():
+    print(len(songs))
+
+def loadFiles(songs, artists, mediadir):
+    foldersOK = detectFolders(artists, mediadir)
+    folderList = []
+    for i in sorted(foldersOK.keys()):
+        for song in songs:
+            if song.artist() == i:
+                reply = findsong(i, song.title(), foldersOK[i])
+                if reply != None:
+                    print(reply)
+                    song.setPath(reply)
 
 
 
+def findsong(artist, title, filePath):
+    for root, dirs, files in os.walk(filePath):
+        for name in dirs:
+            findsong(artist, title, os.path.join(root, name))
+        for name in files:
+            if title in name:
+                return os.path.join(root,name)
 
-masterlist, dances = importLists.prepare()
-mediadir = "d:/meedia/muusika/"
+
+def qtPlayer(songs):
+    playables = []
+    for song in songs:
+        if song.isPresent():
+            playables.append(song)
+    if len(playables) == 0:
+        print("no songs available")
+        return
+    else:
+        end = False
+        player = vlc.MediaPlayer()
+        while not end:
+            n = 1
+            print("available songs:")
+            for i in playables:
+                print(n, "\t", i.artist(), "-", i.title(), ":", i.dances())
+                n += 1
+            inp = input("Choose a song to play: ")
+            if inp == "exit":
+                break
+            elif inp == "pause":
+                player.pause()
+            elif inp == "stop":
+                player.stop()
+            #elif isinstance(inp, int) and inp in range(len(playables)):
+            elif inp.isdigit():
+                player = vlc.MediaPlayer(playables[int(inp)-1].getPath())
+                player.play()
+            else:
+                pass
+
+
+def pygPlayer(songs):
+    playables = []
+    for song in songs:
+        if song.isPresent() and song.getPath().endswith("mp3"):
+            playables.append(song)
+    if len(playables) == 0:
+        print("no songs available")
+        return
+    else:
+        pygame.mixer.init()
+        while not end:
+            n = 1
+            print("available songs:")
+            for i in playables:
+                print(n, "\t", i.artist(), "-", i.title(), ":", i.dances())
+                n += 1
+            inp = input("Choose a song to play: ")
+            if inp == "exit":
+                break
+            elif isinstance(inp, int) and inp in range(len(playables)):
+                pygame.mixer.music.load(playables[inp].getPath())
+                pygame.mixer.music.play()
+                while pygame.mixer.music.get_busy() == True:
+                    continue
+
+
+
+masterlist, dances, songs = importLists.prepare()
+mediadir = setPath()
 artists = []
 getArtists(masterlist, artists)
 
 
 
+
 end = False
 while not end:
-    comm = input("Insert command: ")
+    comm = input("Insert command: ").upper()
     if comm == "EXIT":
         end = True
     if comm == "PATH":
@@ -99,3 +192,14 @@ while not end:
         find(masterlist,dances)
     if comm == "ARTISTS":
         countArtists(masterlist)
+    if comm == "TOTAL":
+        numSongs()
+    if comm == "DANCES":
+        print(Song.differentDances())
+        print(Song.listDances())
+    if comm == "LOADF":
+        loadFiles(songs, artists, mediadir)
+    if comm == "QTPLAYER":
+        qtPlayer(songs)
+    if comm == "PYGPLAYER":
+        pygPlayer(songs)
