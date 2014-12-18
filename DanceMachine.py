@@ -6,6 +6,7 @@ from classes import Song, Player
 import vlc
 import pygame
 import sys
+from tkinter import *
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 
@@ -201,14 +202,38 @@ def pygPlayer(songs):
                     continue
 
 
-def loadPlayer():
-    app = QtGui.QApplication(sys.argv)
-    player = Player()
-    player.show()
-    #player.resize(640, 480)
-    if sys.argv[1:]:
-        player.OpenFile(sys.argv[1])
-    sys.exit(app.exec_())
+def loadPlayer(songs, artists):
+    root = Tk()
+    root.geometry("640x720+300+300")
+    app = Player(root, songs, artists)
+    root.mainloop()
+    # app = QtGui.QApplication(sys.argv)
+    # player = Player()
+    # player.show()
+    # #player.resize(640, 480)
+    # if sys.argv[1:]:
+    #     player.OpenFile(sys.argv[1])
+    # sys.exit(app.exec_())
+
+
+# def main(songs, artists):
+#     app = QtGui.QApplication(sys.argv)
+#
+#     main = Player(songs, artists)
+#     main.show()
+#
+#     sys.exit(app.exec_())
+
+
+def main():
+
+    root = Tk()
+    root.geometry("640x480+300+300")
+    app = Example(root)
+    root.mainloop()
+
+
+
 
 
 
@@ -217,8 +242,12 @@ mediadir = setPath()
 artists = []
 getArtists(masterlist, artists)
 loadFiles(songs, artists, mediadir)
-qtPlayer(songs, artists)
-loadplayer()
+loadPlayer(songs, artists)
+#qtPlayer(songs, artists)
+
+# if __name__ == '__main__':
+#     main()
+#main(songs, artists)
 # if __name__ == "__main__":
 #     app = QtGui.QApplication(sys.argv)
 #     player = Player()
@@ -255,5 +284,5 @@ while not end:
         loadFiles(songs, artists, mediadir)
     if comm == "PLAYER":
         qtPlayer(songs, artists)
-    if comm == "PYGPLAYER":
-        pygPlayer(songs)
+    if comm == "GFXPLAYER":
+        loadPlayer(songs, artists)

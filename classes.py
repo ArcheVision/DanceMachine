@@ -5,9 +5,11 @@ import vlc
 import time
 import os
 from tkinter import *
+import threading
+import easygui
 from PyQt5 import uic
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
+#from PyQt5.QtWidgets import *
+#from PyQt5.QtCore import *
 # from PyQt5.QtWidgets import QApplication, QDialog
 
 
@@ -19,7 +21,7 @@ class Song(object):
 
     dancesPresent = {}
 
-    def __init__(self, artist, songName, dance, ispresent = False, osPath = "", rating = 0, playcount = 0):
+    def __init__(self, artist, songName, dance, tempo = 0, ispresent = False, osPath = "", rating = 0, playcount = 0, difficulty = 0):
         if dance not in Song.dancesPresent.keys():
             Song.dancesPresent[dance] = 1
         self.__artist = artist
@@ -31,11 +33,13 @@ class Song(object):
         self.__playcount = playcount
         self.__islocal = False
         self.__localpath = ""
+        self.__difficulty = difficulty
+        self.__tempo = tempo
 
 
     @staticmethod
     def differentDances():
-        return len(Song.dancesPresent.keys())
+        return len(Song.listDances())
 
     @staticmethod
     def listDances():
@@ -122,15 +126,36 @@ class Song(object):
     def setRating(self, newRating):
         self.__rating = newRating
 
-    def addRating(self):
+    def incRating(self):
         self.__rating += 0.5
         if self.__rating > 5:
             self.__rating = 5
 
-    def cutRating(self):
+    def decRating(self):
         self.__rating -= 0.5
         if self.__rating < 0:
             self.__rating = 0
+
+
+# ### Difficulty accessors ####
+def getDifficulty(self):
+    return self.__difficulty
+
+
+def setDifficulty(self, newDifficulty):
+    self.__difficulty = newDifficulty
+
+
+def incDifficulty(self):
+    self.__difficulty += 1
+    if self.__difficulty > 5:
+        self.__difficulty = 5
+
+
+def decDifficulty(self):
+    self.__difficulty -= 1
+    if self.__difficulty < 0:
+        self.__difficulty = 0
 
 
     #### PlayCount accessors ####
@@ -164,166 +189,237 @@ class Song(object):
 
 
 
-class Player(QWidget):
 
-    def __init__(self):
-        super(QWidget, self).__init__()
 
-        self.setStyleSheet('''
-            QWidget {
-              background-color: #000;
-              color: #FFF;
-            }
-            QLabel {
-              font-size: 18px;
-            }
-            ''')
+class Player(Frame):
 
-        self.screen = QWidget()
-        self.screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    def __init__(self, parent, songs = [], artists = []):
+        Frame.__init__(self, parent, background="white")
+
+        self.parent = parent
+
+        self.__songs = songs
+        self.__artists = artists
         self.vlc = vlc.Instance()
         self.player = self.vlc.media_player_new()
-        self.player.set_xwindow(self.screen.winId())
+        self.initUI()
 
-        self.mainBox = QVBoxLayout()
-        self.setLayout(self.mainBox)
-        self.mainBox.addWidget(self.screen)
 
-        self.label = QLabel()
-        self.label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-        self.mainBox.addWidget(self.label)
-        self.label.hide()
 
-        self.slider = Slider(Qt.Horizontal, self)
-        self.slider.player = self.player
-        self.slider.setMaximum(65536)
-        self.slider.sliderMoved.connect(self.setPosition)
-        self.mainBox.addWidget(self.slider)
-        self.slider.hide()
+    def initUI(self):
+        self.parent.title("Simple")
+        self.pack(fill=BOTH, expand=1)
 
-        self.timer = QTimer(self)
-        self.timer.setInterval(200)
-        self.timer.timeout.connect(self.update)
 
-        self.files = []
-        #for arg in sys.argv[1:]:
-        #    media = self.vlc.media_new(arg)
-        #    self.files.append(File(arg, media))
-            # #    loc = "d:\\Muusika\\python\\tisko\\"
-            ##    for item in os.listdir(loc):
-            ##        if item.endswith(".mp3"):
-            ##            media = self.vlc.media_new(loc)
-            ##            self.files.append(File(loc+item, media))
+        quitButton = Button(self, text="Quit",
+                            command=self.quit)
+        quitButton.place(x=550, y=50)
 
-        self.index = 0
-        #self.play()
+        playButton = Button(self, text="Play",
+                            command = self.play())
+        playButton.place(x=550, y=90)
+
+        pauseButton = Button(self, text="Pause",
+                            command=self.play())
+
+        pauseButton.place(x=550, y=130)
+
+        stopButton = Button(self, text="Stop",
+                            command=self.play())
+
+        stopButton.place(x=550, y=170)
+
+        songList = Listbox(self, width=80, height=30)
+        playables = []
+        num = 1
+        for s in self.__songs:
+            if s.isPresent():
+                songString = (str(num) + ":\t" + str(s.dances()) + " " + s.artist() + " - " + s.title())
+                songList.insert(END, songString)
+                playables.append(s)
+                num += 1
+        songList.bind("<<ListboxSelect>>", self.onSelect)
+        songList.place(x=30, y = 30)
+
+
+    def onSelect(self, val):
+
+        print(val)
+        sender = val.widget
+        idx = sender.curselection()
+        value = sender.get(idx)
+
+        self.var.set(value)
 
 
     def play(self):
-        self.player.set_media(self.files[self.index].media)
-        self.player.play()
-        m = self.player.get_media()
-        self.label.setText(' '.join([
-            '%d / %d' % (self.index + 1, len(self.files)),
-            self.files[self.index].path,
-        ]))
-        self.timer.start()
+        pass
 
 
-    def playOrPause(self):
-        self.player.pause()
-        self.timer.start()
 
-
-    def setPosition(self, position):
-        self.player.set_position(position / 65536)
-
-
-    def update(self):
-        self.slider.setValue(self.player.get_position() * 65536)
-        if not self.player.is_playing():
-            self.timer.stop()
-
-
-    def mspf(self):
-        return int(1000 // (self.player.get_fps() or 25))
-
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Q:
-            sys.exit(0)
-        elif event.key() == Qt.Key_D:
-            self.player.set_time(self.player.get_time() + 3000)
-        elif event.key() == Qt.Key_A:
-            self.player.set_time(self.player.get_time() - 3000)
-        elif event.key() == Qt.Key_S:
-            self.player.set_time(self.player.get_time() + 10000)
-        elif event.key() == Qt.Key_W:
-            self.player.set_time(self.player.get_time() - 10000)
-        elif event.key() == Qt.Key_C:
-            self.player.set_time(self.player.get_time() + self.mspf())
-        elif event.key() == Qt.Key_X:
-            self.player.set_time(self.player.get_time() - self.mspf())
-        elif event.key() == Qt.Key_Space:
-            self.playOrPause()
-        elif event.key() == Qt.Key_F:
-            filename = os.path.join(os.path.expanduser("~"),
-                                    os.path.basename(self.files[self.index].path) + "-" + str(time.time()) + ".png")
-            self.player.video_take_snapshot(0, filename, 0, 0)
-        elif event.key() == Qt.Key_J:
-            self.index += 1
-            if self.index == len(self.files):
-                self.index = 0
-            self.play()
-        elif event.key() == Qt.Key_K:
-            self.index -= 1
-            if self.index < 0:
-                self.index = len(self.files) - 1
-            self.play()
-        elif event.key() == Qt.Key_E:
-            if self.label.isHidden():
-                self.label.show()
-                self.slider.show()
-            else:
-                self.label.hide()
-                self.slider.hide()
-        elif event.key() == Qt.Key_1:
-            self.player.set_rate(1)
-        elif event.key() == Qt.Key_2:
-            self.player.set_rate(1.2)
-        elif event.key() == Qt.Key_3:
-            self.player.set_rate(1.5)
-        elif event.key() == Qt.Key_4:
-            self.player.set_rate(2)
-        elif event.key() == Qt.Key_5:
-            self.player.set_rate(3)
-
-
-class Slider(QSlider):
-    def __init__(self, *args):
-        super(QSlider, self).__init__(*args)
-        self.player = None
-
-    def mousePressEvent(self, event):
-        self.setValue(self.maximum() * event.x() / self.width())
-        self.player.set_position(self.value() / self.maximum())
-
-
-# class Player(QtGui.QMainWindow, form_class):
+# class Player(QWidget):
 #
-#     def __init__(self, parent=None):
-#         QMainWindow.__init__(self, parent)
-#         self.setupUI(self)
-#         self.setWindowTitle("DanceMachine")
-#         # creating a basic vlc instance
-#         self.instance = vlc.Instance()
-#     #     # creating an empty vlc media player
-#         self.mediaplayer = self.instance.media_player_new()
-#     #
-#         #self.createUI()
-#         self.isPaused = False
-
-
+#     def __init__(self, songs, artists, parent=None):
+#         super(Form, self).__init__()
+#
+#         #self.setStyleSheet('''
+#         #    QWidget {
+#         #      background-color: #000;
+#         #      color: #FFF;
+#         #    }
+#         #    QLabel {
+#         #      font-size: 18px;
+#         #    }
+#         #    ''')
+#         self.__songs = songs
+#         self.__artists = artists
+#
+#
+#         self.screen = QWidget()
+#         self.screen.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+#         self.vlc = vlc.Instance()
+#         self.player = self.vlc.media_player_new()
+#         self.player.set_xwindow(self.screen.winId())
+#
+#         #self.mainBox = QVBoxLayout()
+#         #self.setLayout(self.mainBox)
+#         #self.mainBox.addWidget(self.screen)
+#
+#         #self.label = QLabel()
+#         #self.label.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+#         #self.mainBox.addWidget(self.label)
+#         #self.label.hide()
+#
+#         #self.slider = Slider(Qt.Horizontal, self)
+#         #self.slider.player = self.player
+#         #self.slider.setMaximum(65536)
+#         #self.slider.sliderMoved.connect(self.setPosition)
+#         #self.mainBox.addWidget(self.slider)
+#         #self.slider.hide()
+#
+#         #self.timer = QTimer(self)
+#         #self.timer.setInterval(200)
+#         #self.timer.timeout.connect(self.update)
+#
+#         #self.files = []
+#         #for arg in sys.argv[1:]:
+#         #    media = self.vlc.media_new(arg)
+#         #    self.files.append(File(arg, media))
+#             # #    loc = "d:\\Muusika\\python\\tisko\\"
+#             ##    for item in os.listdir(loc):
+#             ##        if item.endswith(".mp3"):
+#             ##            media = self.vlc.media_new(loc)
+#             ##            self.files.append(File(loc+item, media))
+#
+#         #self.index = 0
+#         #self.play()
+#
+#
+#     def play(self):
+#         self.player.set_media(self.files[self.index].media)
+#         self.player.play()
+#         m = self.player.get_media()
+#         self.label.setText(' '.join([
+#             '%d / %d' % (self.index + 1, len(self.files)),
+#             self.files[self.index].path,
+#         ]))
+#         self.timer.start()
+#
+#
+#     def playOrPause(self):
+#         self.player.pause()
+#         self.timer.start()
+#
+#
+#     def setPosition(self, position):
+#         self.player.set_position(position / 65536)
+#
+#
+#     def update(self):
+#         self.slider.setValue(self.player.get_position() * 65536)
+#         if not self.player.is_playing():
+#             self.timer.stop()
+#
+#
+#     def mspf(self):
+#         return int(1000 // (self.player.get_fps() or 25))
+#
+#
+#     def keyPressEvent(self, event):
+#         if event.key() == Qt.Key_Q:
+#             sys.exit(0)
+#         elif event.key() == Qt.Key_D:
+#             self.player.set_time(self.player.get_time() + 3000)
+#         elif event.key() == Qt.Key_A:
+#             self.player.set_time(self.player.get_time() - 3000)
+#         elif event.key() == Qt.Key_S:
+#             self.player.set_time(self.player.get_time() + 10000)
+#         elif event.key() == Qt.Key_W:
+#             self.player.set_time(self.player.get_time() - 10000)
+#         elif event.key() == Qt.Key_C:
+#             self.player.set_time(self.player.get_time() + self.mspf())
+#         elif event.key() == Qt.Key_X:
+#             self.player.set_time(self.player.get_time() - self.mspf())
+#         elif event.key() == Qt.Key_Space:
+#             self.playOrPause()
+#         elif event.key() == Qt.Key_F:
+#             filename = os.path.join(os.path.expanduser("~"),
+#                                     os.path.basename(self.files[self.index].path) + "-" + str(time.time()) + ".png")
+#             self.player.video_take_snapshot(0, filename, 0, 0)
+#         elif event.key() == Qt.Key_J:
+#             self.index += 1
+#             if self.index == len(self.files):
+#                 self.index = 0
+#             self.play()
+#         elif event.key() == Qt.Key_K:
+#             self.index -= 1
+#             if self.index < 0:
+#                 self.index = len(self.files) - 1
+#             self.play()
+#         elif event.key() == Qt.Key_E:
+#             if self.label.isHidden():
+#                 self.label.show()
+#                 self.slider.show()
+#             else:
+#                 self.label.hide()
+#                 self.slider.hide()
+#         elif event.key() == Qt.Key_1:
+#             self.player.set_rate(1)
+#         elif event.key() == Qt.Key_2:
+#             self.player.set_rate(1.2)
+#         elif event.key() == Qt.Key_3:
+#             self.player.set_rate(1.5)
+#         elif event.key() == Qt.Key_4:
+#             self.player.set_rate(2)
+#         elif event.key() == Qt.Key_5:
+#             self.player.set_rate(3)
+#
+#
+# class Slider(QSlider):
+#     def __init__(self, *args):
+#         super(QSlider, self).__init__(*args)
+#         self.player = None
+#
+#     def mousePressEvent(self, event):
+#         self.setValue(self.maximum() * event.x() / self.width())
+#         self.player.set_position(self.value() / self.maximum())
+#
+#
+# # class Player(QtGui.QMainWindow, form_class):
+# #
+# #     def __init__(self, parent=None):
+# #         QMainWindow.__init__(self, parent)
+# #         self.setupUI(self)
+# #         self.setWindowTitle("DanceMachine")
+# #         # creating a basic vlc instance
+# #         self.instance = vlc.Instance()
+# #     #     # creating an empty vlc media player
+# #         self.mediaplayer = self.instance.media_player_new()
+# #     #
+# #         #self.createUI()
+# #         self.isPaused = False
+#
+#
 
 
 
