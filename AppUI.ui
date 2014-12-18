@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>973</width>
+    <width>879</width>
     <height>666</height>
    </rect>
   </property>
@@ -14,47 +14,159 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <widget class="QComboBox" name="comboBox">
+   <widget class="QComboBox" name="filterSongs">
     <property name="geometry">
      <rect>
-      <x>240</x>
-      <y>20</y>
-      <width>69</width>
+      <x>110</x>
+      <y>60</y>
+      <width>181</width>
       <height>22</height>
      </rect>
     </property>
+    <item>
+     <property name="text">
+      <string>All</string>
+     </property>
+    </item>
    </widget>
-   <widget class="QListWidget" name="listWidget">
+   <widget class="QTableView" name="songList">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>90</y>
+      <x>50</x>
+      <y>100</y>
       <width>301</width>
-      <height>411</height>
+      <height>401</height>
      </rect>
     </property>
    </widget>
-   <widget class="QListWidget" name="listWidget_2">
+   <widget class="QTableView" name="playList">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>90</y>
-      <width>321</width>
-      <height>411</height>
+      <x>510</x>
+      <y>100</y>
+      <width>301</width>
+      <height>401</height>
      </rect>
     </property>
    </widget>
-   <widget class="QPushButton" name="pushButton">
+   <widget class="QToolButton" name="playButton">
     <property name="geometry">
      <rect>
-      <x>90</x>
-      <y>20</y>
-      <width>75</width>
-      <height>23</height>
+      <x>590</x>
+      <y>40</y>
+      <width>41</width>
+      <height>41</height>
      </rect>
     </property>
     <property name="text">
-     <string>PushButton</string>
+     <string>Play</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="pauseButton">
+    <property name="geometry">
+     <rect>
+      <x>640</x>
+      <y>40</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Pause</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="forwardButton">
+    <property name="geometry">
+     <rect>
+      <x>690</x>
+      <y>40</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Fwd</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="rewindButton">
+    <property name="geometry">
+     <rect>
+      <x>540</x>
+      <y>40</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Rew</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="stopButton">
+    <property name="geometry">
+     <rect>
+      <x>740</x>
+      <y>40</y>
+      <width>41</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Stop</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="repeatButton">
+    <property name="geometry">
+     <rect>
+      <x>560</x>
+      <y>520</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Repeat</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="shuffleButton">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>520</y>
+      <width>91</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Shuffle</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="toPlaylistButton">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>210</y>
+      <width>101</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>To playlist</string>
+    </property>
+   </widget>
+   <widget class="QToolButton" name="removeFromPlaylistButton">
+    <property name="geometry">
+     <rect>
+      <x>380</x>
+      <y>300</y>
+      <width>101</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Remove from list</string>
     </property>
    </widget>
   </widget>
@@ -63,7 +175,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>973</width>
+     <width>879</width>
      <height>21</height>
     </rect>
    </property>

@@ -2,9 +2,11 @@ __author__ = 'Laur'
 
 import importLists
 import os
-from classes import Song#, Player
+from classes import Song, Player
 import vlc
 import pygame
+import sys
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 
 
 def setPath():
@@ -145,7 +147,7 @@ def qtPlayer(songs, artists):
                             num += 1
 
                 elif ask2.lower() == "dance":
-                    for e in sorted(playables) :
+                    for e in playables:
                         print(str(e.dances()))
                     ask3 = input("Which dance: ")
                     num = 1
@@ -164,9 +166,9 @@ def qtPlayer(songs, artists):
                     pass
             if ask.lower() == "conf":
                 break
-            elif inp.lower() == "pause":
+            elif ask.lower() == "pause":
                 player.pause()
-            elif inp.lower() == "stop":
+            elif ask.lower() == "stop":
                 player.stop()
             #elif isinstance(inp, int) and inp in range(len(playables)):
             else:
@@ -199,6 +201,16 @@ def pygPlayer(songs):
                     continue
 
 
+def loadPlayer():
+    app = QtGui.QApplication(sys.argv)
+    player = Player()
+    player.show()
+    #player.resize(640, 480)
+    if sys.argv[1:]:
+        player.OpenFile(sys.argv[1])
+    sys.exit(app.exec_())
+
+
 
 masterlist, dances, songs = importLists.prepare()
 mediadir = setPath()
@@ -206,6 +218,7 @@ artists = []
 getArtists(masterlist, artists)
 loadFiles(songs, artists, mediadir)
 qtPlayer(songs, artists)
+loadplayer()
 # if __name__ == "__main__":
 #     app = QtGui.QApplication(sys.argv)
 #     player = Player()
